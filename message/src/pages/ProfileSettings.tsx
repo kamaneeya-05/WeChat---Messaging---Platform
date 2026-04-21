@@ -1,0 +1,224 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { updateUser } from '../store/features/authSlice';
+import { Upload, Trash2, ArrowLeft } from 'lucide-react';
+import Avatar from '../components/common/Avatar';
+import { API_BASE_URL, toMediaUrl } from '../config/api';
+
+export const ProfileSettings = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Fetch current profile
+    const fetchProfile = async () => {
+      try {
+        const { data } = await axios.get(`${API_BASE_URL}/api/users/profile/me`);
+        setProfilePicture(data.profilePicture);
+      } catch (error) {
+        console.error('Failed to fetch profile', error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'File is too large. Maximum size is 5MB.' });
+      return;
+    }
+
+    // Create preview
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  const handleUploadProfilePicture = async () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      setMessage({ type: 'error', text: 'Please select a file' });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+
+      const { data } = await axios.post(
+        `${API_BASE_URL}/api/users/profile/picture`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      setProfilePicture(data.profilePicture);
+      dispatch(updateUser({ profilePicture: data.profilePicture }));
+      setPreviewUrl(null);
+      setMessage({ type: 'success', text: 'Profile picture updated successfully!' });
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to upload profile picture' });
+      console.error('Upload error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteProfilePicture = async () => {
+    if (!profilePicture) return;
+
+    setIsLoading(true);
+    try {
+      await axios.delete(`${API_BASE_URL}/api/users/profile/picture`);
+      setProfilePicture(null);
+      dispatch(updateUser({ profilePicture: undefined }));
+      setPreviewUrl(null);
+      setMessage({ type: 'success', text: 'Profile picture deleted successfully!' });
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to delete profile picture' });
+      console.error('Delete error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 p-4">
+      <div className="max-w-md mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-8">
+          <button
+            onClick={() => navigate('/')}
+            className="p-2 hover:bg-white rounded-lg transition"
+          >
+            <ArrowLeft size={20} className="text-slate-600" />
+          </button>
+          <h1 className="text-3xl font-bold text-slate-800">Profile Settings</h1>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+          {/* User Info */}
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-200"
+                />
+              ) : profilePicture ? (
+                <img
+                  src={toMediaUrl(profilePicture)}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-200"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Avatar username={user?.username} size="lg" />
+                </div>
+              )}
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">{user?.username}</h2>
+            <p className="text-sm text-slate-500">{user?.email}</p>
+          </div>
+
+          {/* Messages */}
+          {message && (
+            <div
+              className={`p-3 rounded-lg text-sm ${
+                message.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+
+          {/* File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          {/* Upload Button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition disabled:opacity-50 font-medium"
+          >
+            <Upload size={18} />
+            Choose Profile Picture
+          </button>
+
+          {/* Upload Confirm Button (only show if file selected) */}
+          {previewUrl && (
+            <button
+              onClick={handleUploadProfilePicture}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition disabled:opacity-50 font-medium"
+            >
+              {isLoading ? 'Uploading...' : 'Confirm Upload'}
+            </button>
+          )}
+
+          {/* Delete Button (only show if profile picture exists) */}
+          {profilePicture && !previewUrl && (
+            <button
+              onClick={handleDeleteProfilePicture}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition disabled:opacity-50 font-medium"
+            >
+              <Trash2 size={18} />
+              Delete Profile Picture
+            </button>
+          )}
+
+          {/* Cancel Button (only show if file selected) */}
+          {previewUrl && (
+            <button
+              onClick={() => {
+                setPreviewUrl(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
+              }}
+              className="w-full px-4 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition font-medium"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+
+        {/* Info Text */}
+        <p className="text-center text-sm text-slate-500 mt-6">
+          Recommended size: 400x400px &bull; Maximum size: 5MB
+        </p>
+      </div>
+    </div>
+  );
+};
