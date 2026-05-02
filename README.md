@@ -16,37 +16,39 @@ A modern, full-stack real-time messaging application built with React, Node.js, 
 ## 📁 Project Structure
 
 ```
-WhatsUp/
-├── backend/                 # Node.js Express backend
+WeChat-Messaging-Platform/
+│
+├── backend/                    # Node.js Express Server
 │   ├── src/
-│   │   ├── server.js       # Main server entry point
+│   │   ├── server.js          # Main server entry point
 │   │   ├── config/
-│   │   │   └── db.js       # Database configuration
-│   │   ├── controllers/    # Route controllers
+│   │   │   └── db.js          # MongoDB configuration
+│   │   ├── controllers/       # Route controllers
 │   │   │   ├── authController.js
 │   │   │   ├── chatController.js
 │   │   │   ├── messageController.js
 │   │   │   └── userController.js
-│   │   ├── middleware/     # Custom middleware
+│   │   ├── middleware/        # Custom middleware
 │   │   │   └── authMiddleware.js
-│   │   ├── models/         # MongoDB schemas
+│   │   ├── models/            # MongoDB schemas
 │   │   │   ├── User.js
 │   │   │   ├── Chat.js
 │   │   │   ├── Message.js
 │   │   │   └── Flag.js
-│   │   ├── routes/         # API routes
+│   │   ├── routes/            # API routes
 │   │   │   ├── authRoutes.js
 │   │   │   ├── chatRoutes.js
 │   │   │   ├── messageRoutes.js
 │   │   │   └── userRoutes.js
-│   │   ├── sockets/        # WebSocket handlers
+│   │   ├── sockets/           # WebSocket handlers
 │   │   │   └── chatSocket.js
-│   │   └── uploads/        # File uploads
+│   │   └── uploads/           # File uploads
 │   │       ├── chat_media/
 │   │       └── profile_pictures/
-│   └── package.json
+│   ├── package.json
+│   └── .env.example
 │
-├── message/                 # React frontend (Vite)
+├── frontend/                   # React Vite Application
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── main.jsx
@@ -74,13 +76,13 @@ WhatsUp/
 │   │   │   └── ProfileSettings.jsx
 │   │   ├── config/
 │   │   │   └── api.js
-│   │   ├── store/          # Redux store
+│   │   ├── store/             # Redux store
 │   │   │   ├── store.js
 │   │   │   ├── hooks.js
 │   │   │   └── features/
 │   │   │       ├── authSlice.js
 │   │   │       └── chatSlice.js
-│   │   ├── hooks/          # Custom React hooks
+│   │   ├── hooks/             # Custom React hooks
 │   │   │   └── useChat.js
 │   │   ├── data/
 │   │   │   └── mockData.js
@@ -92,10 +94,43 @@ WhatsUp/
 │   ├── eslint.config.js
 │   └── index.html
 │
-└── README.md               # This file
+├── docs/                       # Documentation
+│   ├── API.md                 # API endpoints documentation
+│   ├── SETUP.md               # Installation & setup guide
+│   └── CONTRIBUTING.md        # Contribution guidelines
+│
+├── scripts/                    # Utility scripts
+│   └── start-all.sh          # Start both servers
+│
+├── .github/                    # GitHub specific files
+│   └── workflows/
+│       └── ci.yml            # CI/CD workflow
+│
+├── .env.example               # Environment template
+├── .gitignore                 # Git exclusions
+├── LICENSE                    # ISC License
+└── README.md                  # Main documentation
 ```
 
 ## 🚀 Getting Started
+
+### Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/kamaneeya-05/WeChat-Messaging-Platform.git
+   cd WeChat-Messaging-Platform
+   ```
+
+2. **Setup Environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. **Follow the Detailed Setup Guide**
+   
+   See [docs/SETUP.md](docs/SETUP.md) for complete installation instructions.
 
 ### Prerequisites
 
@@ -128,13 +163,11 @@ WhatsUp/
    npm run dev
    ```
 
-The backend will be running on `http://localhost:5000`
-
 ### Frontend Setup
 
-1. Navigate to the message directory:
+1. Navigate to the frontend directory:
    ```bash
-   cd message
+   cd frontend
    ```
 
 2. Install dependencies:
@@ -142,7 +175,7 @@ The backend will be running on `http://localhost:5000`
    npm install
    ```
 
-3. Create a `.env` file in the message directory:
+3. Create a `.env` file in the frontend directory:
    ```
    VITE_API_URL=http://localhost:5000
    ```
@@ -152,7 +185,7 @@ The backend will be running on `http://localhost:5000`
    npm run dev
    ```
 
-The frontend will be running on `http://localhost:5173`
+**For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md)**
 
 ## 📦 Dependencies
 
@@ -177,99 +210,77 @@ The frontend will be running on `http://localhost:5173`
 - **Tailwind CSS** - Utility-first CSS
 - **Lucide React** - Icon library
 
-## 🔐 Authentication
+## 🔐 Security Features
 
-The application uses JWT-based authentication:
-- Users register with email and password
-- Password is hashed using bcryptjs
-- JWT token is issued upon login
-- Token is stored in localStorage on the client
-- Protected routes require valid JWT token
-
-## 🔌 Real-time Features
-
-Socket.io is used for:
-- Real-time message delivery
-- User online/offline status
-- Typing indicators
-- Message read receipts
-- Chat notifications
-
-## 📸 File Upload
-
-- Profile pictures: `/uploads/profile_pictures/`
-- Chat media: `/uploads/chat_media/`
-- Handled by multer middleware
+- **Password Hashing**: bcryptjs for secure password storage
+- **JWT Authentication**: Token-based user authentication
+- **Protected Routes**: JWT validation on protected endpoints
+- **Real-time Communication**: Socket.io with secure WebSocket
+- **CORS**: Configured cross-origin requests
 
 ## 🛣️ API Routes
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
+See [docs/API.md](docs/API.md) for complete API documentation including:
+- Authentication endpoints
+- User management
+- Chat operations
+- Message handling
 
-### Users
-- `GET /api/users/:id` - Get user profile
-- `PUT /api/users/:id` - Update user profile
-- `GET /api/users/search/:query` - Search users
+### Quick Reference
+- **Authentication**: `POST /api/auth/register`, `/api/auth/login`
+- **Users**: `GET /api/users/:id`, `PUT /api/users/:id`
+- **Chats**: `GET /api/chats`, `POST /api/chats`
+- **Messages**: `GET /api/messages/:chatId`, `POST /api/messages`
 
-### Chats
-- `GET /api/chats` - Get all chats
-- `POST /api/chats` - Create new chat
-- `DELETE /api/chats/:id` - Delete chat
+---
 
-### Messages
-- `GET /api/messages/:chatId` - Get messages in chat
-- `POST /api/messages` - Send message
-- `PUT /api/messages/:id` - Edit message
-- `DELETE /api/messages/:id` - Delete message
+## 📚 Documentation
+
+- [API Documentation](docs/API.md) - All API endpoints with examples
+- [Setup Guide](docs/SETUP.md) - Detailed installation & configuration
+- [Contributing Guide](docs/CONTRIBUTING.md) - How to contribute to this project
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines on:
+- How to contribute
+- Commit message format
+- Code style standards
+- Pull request process
 
 ## 🧪 Development
 
 ### Code Quality
-- ESLint is configured for code linting
+- ESLint configured for code linting
 - Run `npm run lint` in the frontend directory
 
 ### Building for Production
 
 **Frontend:**
 ```bash
-cd message
+cd frontend
 npm run build
+npm run preview
 ```
 
 **Backend:**
 ```bash
 cd backend
 npm run build
+npm start
 ```
 
-## 📝 Environment Variables
-
-### Backend (.env)
-```
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/whatsup
-JWT_SECRET=your_secret_key_here
-NODE_ENV=development
-```
-
-### Frontend (.env)
-```
-VITE_API_URL=http://localhost:5000
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+For complete development instructions, see [docs/SETUP.md](docs/SETUP.md).
 
 ## 📄 License
 
-This project is licensed under the ISC License - see the LICENSE file for details.
+This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
 
-## 📧 Contact
+## 📧 Support
 
-For questions or support, please reach out through the repository issues.
+For questions, bug reports, or feature requests, please open an issue on [GitHub Issues](https://github.com/kamaneeya-05/WeChat-Messaging-Platform/issues).
 
 ---
 
