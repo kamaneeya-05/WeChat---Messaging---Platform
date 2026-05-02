@@ -13,6 +13,12 @@ A modern, full-stack real-time messaging application built with React, Node.js, 
 - **Responsive Design**: Modern UI built with React and Tailwind CSS
 - **State Management**: Redux Toolkit for centralized state management
 
+## 🔗 Links
+
+- **Report**: https://drive.google.com/file/d/1wXOS6XRoGmUYxEsqYpgzi8MEesPvmOmH/view?usp=drive_link
+- **Project demo**: https://drive.google.com/file/d/14FsRcjU2HK_-vhmCuj9V68gWshT0p5vP/view?usp=drive_link
+- **Code explanation**: https://drive.google.com/file/d/1mrRU2SdZlJpj56zIjUxSOUN6QqY5d_bA/view?usp=drive_link
+
 ## 📁 Project Structure
 
 ```
